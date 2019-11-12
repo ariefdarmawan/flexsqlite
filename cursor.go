@@ -1,8 +1,6 @@
 package flexsqlite
 
 import (
-	"time"
-
 	"git.eaciitapp.com/sebar/dbflex/drivers/rdbms"
 	"github.com/eaciit/toolkit"
 )
@@ -33,12 +31,15 @@ func (c *Cursor) Serialize(dest interface{}) error {
 			m.Set(name, toolkit.ToFloat64(value, 4, toolkit.RoundingAuto))
 
 		case "time.Time":
-			if dt, err := time.Parse(time.RFC3339, value.(string)); err == nil {
-				m.Set(name, dt)
-			} else {
-				dt = toolkit.String2Date(value.(string), rdbms.TimeFormat())
-				m.Set(name, dt)
-			}
+			m.Set(name, value)
+			/*
+				if dt, err := time.Parse(time.RFC3339, value.(string)); err == nil {
+					m.Set(name, dt)
+				} else {
+					dt = toolkit.String2Date(value.(string), rdbms.TimeFormat())
+					m.Set(name, dt)
+				}
+			*/
 
 		default:
 			m.Set(name, value)

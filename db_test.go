@@ -50,6 +50,24 @@ func connect() (dbflex.IConnection, error) {
 	return conn, nil
 }
 
+func TestDropCreateTable(t *testing.T) {
+	cv.Convey("connecting", t, func() {
+		conn, err := connect()
+		cv.So(err, cv.ShouldBeNil)
+		defer conn.Close()
+
+		cv.Convey("drop table", func() {
+			conn.DropTable(tableName)
+			cv.So(err, cv.ShouldBeNil)
+
+			cv.Convey("ensure table", func() {
+				err = conn.EnsureTable(tableName, []string{"ID"}, newDataObject("", ""))
+				cv.So(err, cv.ShouldBeNil)
+			})
+		})
+	})
+}
+
 func TestQueryM(t *testing.T) {
 	cv.Convey("connecting", t, func() {
 		conn, err := connect()
@@ -57,7 +75,7 @@ func TestQueryM(t *testing.T) {
 		defer conn.Close()
 
 		cv.Convey("saving data", func() {
-			cmd := dbflex.From(tableName).Where(dbflex.Eq("id", "E1")).Save()
+			cmd := dbflex.From(tableName).Where(dbflex.Eq("id", "e1")).Save()
 			_, err := conn.Execute(cmd, toolkit.M{}.Set("data", &dataObject{"E1", "Emp01", 20.37, "", time.Now()}))
 			cv.So(err, cv.ShouldBeNil)
 
@@ -72,8 +90,6 @@ func TestQueryM(t *testing.T) {
 					err := cur.Fetchs(&ms, 0)
 					cv.So(err, cv.ShouldBeNil)
 					cv.So(len(ms), cv.ShouldBeGreaterThan, 0)
-
-					cv.Printf("\nResults:\n%s\n", toolkit.JsonString(ms))
 				})
 			})
 		})
@@ -95,7 +111,7 @@ func TestQueryObj(t *testing.T) {
 
 			cv.Convey("get results", func() {
 				ms := []dataObject{}
-				err := cur.Fetchs(&ms, 0)
+				err := cur.Fetchs(&ms, 2)
 				cv.So(err, cv.ShouldBeNil)
 				cv.So(len(ms), cv.ShouldBeGreaterThan, 0)
 

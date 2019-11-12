@@ -108,17 +108,13 @@ func (q *Query) Execute(in toolkit.M) (interface{}, error) {
 		}
 		defer cursor.Close()
 
+		var saveCmd dbflex.ICommand
 		if cursor.Count() == 0 {
-			cmdtxt = strings.Replace(cmdtxt, "{{.FIELDS}}", strings.Join(sqlfieldnames, ","), -1)
-			cmdtxt = strings.Replace(cmdtxt, "{{.VALUES}}", strings.Join(sqlvalues, ","), -1)
+			saveCmd = dbflex.From(tableName).Where(filter.(*dbflex.Filter)).Insert()
 		} else {
-			//fmt.Println("fieldnames:", sqlfieldnames)
-			updatedfields := []string{}
-			for idx, fieldname := range sqlfieldnames {
-				updatedfields = append(updatedfields, fieldname+"="+sqlvalues[idx])
-			}
-			cmdtxt = strings.Replace(cmdtxt, "{{.FIELDVALUES}}", strings.Join(updatedfields, ","), -1)
+			saveCmd = dbflex.From(tableName).Where(filter.(*dbflex.Filter)).Update()
 		}
+		return q.Connection().Execute(saveCmd, in)
 
 	case dbflex.QueryInsert:
 		cmdtxt = strings.Replace(cmdtxt, "{{.FIELDS}}", strings.Join(sqlfieldnames, ","), -1)
